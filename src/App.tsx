@@ -1,7 +1,9 @@
-import { Routes, Route, Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import ReadView from './pages/ReadView'
 import HighlightsView from './pages/HighlightsView'
 import TokenizerDiag from './pages/TokenizerDiag'
+import SettingsModal from './components/SettingsModal'
 import { ClipboardContext, useClipboardInserterProvider } from './hooks/useClipboardPoller'
 
 function GearIcon() {
@@ -12,16 +14,51 @@ function GearIcon() {
   )
 }
 
+const NAV_LINKS = [
+  { to: '/', label: 'Read' },
+  { to: '/highlights', label: 'Highlights' },
+] as const
+
+function NavLink({ to, label, active }: { to: string; label: string; active: boolean }) {
+  return (
+    <Link
+      to={to}
+      className={`text-[13px] font-mono px-2.5 py-1 rounded-md transition-all ${
+        active
+          ? 'text-zinc-200 bg-white/[0.07]'
+          : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04]'
+      }`}
+    >
+      {label}
+    </Link>
+  )
+}
+
 function App() {
   const clipboard = useClipboardInserterProvider()
+  const [showSettings, setShowSettings] = useState(false)
+  const location = useLocation()
 
   return (
     <ClipboardContext.Provider value={clipboard}>
       <div className="min-h-screen bg-[#1e1e1e] text-[#c8c8c8] flex flex-col">
-        <nav className="sticky top-0 z-10 flex items-center px-4 py-2 border-b border-[#333] bg-[#1e1e1e]">
-          <div className="flex items-center gap-4">
-            <Link to="/" className="text-sm font-mono text-[#c8c8c8] hover:text-white">Read</Link>
-            <Link to="/highlights" className="text-sm font-mono text-[#c8c8c8] hover:text-white">Highlights</Link>
+        <nav
+          className="sticky top-0 z-10 flex items-center px-4 py-2 border-b border-white/[0.06]"
+          style={{
+            backgroundColor: 'rgba(30,30,30,0.85)',
+            backdropFilter: 'blur(12px) saturate(1.3)',
+            WebkitBackdropFilter: 'blur(12px) saturate(1.3)',
+          }}
+        >
+          <div className="flex items-center gap-1">
+            {NAV_LINKS.map(link => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                label={link.label}
+                active={location.pathname === link.to}
+              />
+            ))}
           </div>
           <div id="nav-right" className="ml-auto" />
         </nav>
@@ -32,9 +69,15 @@ function App() {
             <Route path="/diag" element={<TokenizerDiag />} />
           </Routes>
         </main>
-        <button className="fixed bottom-4 right-4 p-2 text-zinc-400 hover:text-zinc-300 rounded-full hover:bg-zinc-700 transition-colors">
-          <GearIcon />
+        <button
+          onClick={() => setShowSettings(true)}
+          className="group fixed bottom-4 right-4 p-2 text-zinc-400 hover:text-zinc-300 rounded-full hover:bg-zinc-700 transition-colors"
+        >
+          <span className="block transition-transform duration-300 ease-out group-hover:rotate-90">
+            <GearIcon />
+          </span>
         </button>
+        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       </div>
     </ClipboardContext.Provider>
   )
