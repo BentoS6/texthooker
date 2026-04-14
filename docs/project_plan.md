@@ -101,3 +101,12 @@ interface Highlight {
 - **Search within highlights** — Filter by date only for v0.1
 - **Mobile support** — Desktop-first, responsive later
 - **i18n** — UI in English only
+
+## Plans for future
+
+- **Add a timer to see how long you were immersing on a particular day**
+- **Add support to see what content you were using to immerse and when**
+- **Highlight particular jlpt level words**
+- **Audio linked text**
+- **One key anki mining**
+- **Furigana on top**

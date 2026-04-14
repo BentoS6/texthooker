@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
+    "dexie": "^4.4.2",
+    "dexie-react-hooks": "^4.4.0",
+    "lindera-wasm-web-ipadic": "^2.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.0",
