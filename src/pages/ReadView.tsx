@@ -5,6 +5,8 @@ import { useHighlights } from '../hooks/useHighlights'
 import { useJlptLevel } from '../hooks/useJlptLevel'
 import HighlightTooltip from '../components/HighlightTooltip'
 import HighlightedLine from '../components/HighlightedLine'
+import FuriganaLine from '../components/FuriganaLine'
+import { snapToTokens } from '../lib/tokenSnap'
 import type { JlptLevel } from '../data/jlpt'
 
 interface Selection {
@@ -21,6 +23,7 @@ function ReadView() {
   const isAtBottomRef = useRef(true)
   const [selection, setSelection] = useState<Selection | null>(null)
   const [debugTokens, setDebugTokens] = useState(false)
+  const [showFurigana, setShowFurigana] = useState(false)
 
 
   const handleScroll = useCallback(() => {
@@ -42,8 +45,8 @@ function ReadView() {
 
   const handleMouseUp = useCallback(() => {
     const sel = window.getSelection()
-    const text = sel?.toString().trim()
-    if (!text || !sel?.rangeCount) {
+    const rawText = sel?.toString().trim()
+    if (!rawText || !sel?.rangeCount) {
       return
     }
 
@@ -54,6 +57,21 @@ function ReadView() {
     const lineEl = node?.closest('[data-line]')
     const context = lineEl?.textContent ?? ''
 
+    // Snap selection to token boundaries if tokens available
+    let text = rawText
+    if (lineEl) {
+      const line = lines.find(l => l.text === lineEl.textContent)
+      if (line?.tokens) {
+        const preRange = document.createRange()
+        preRange.setStart(lineEl, 0)
+        preRange.setEnd(range.startContainer, range.startOffset)
+        const startOffset = preRange.toString().length
+        const endOffset = startOffset + rawText.length
+        const snapped = snapToTokens(line.tokens, startOffset, endOffset)
+        if (snapped) text = snapped
+      }
+    }
+
     setSelection({
       text,
       context,
@@ -63,7 +81,7 @@ function ReadView() {
         bottom: rect.bottom,
       },
     })
-  }, [])
+  }, [lines])
 
   const handleColorSelect = useCallback(
     async (color: string, note: string) => {
@@ -99,6 +117,12 @@ function ReadView() {
     <div className="flex flex-col h-full text-[#c8c8c8]">
       {navRight && createPortal(
         <div className="flex items-center gap-3 text-xs text-zinc-500 font-mono">
+          <button
+            onClick={() => setShowFurigana(prev => !prev)}
+            className={`px-2 py-0.5 rounded text-xs ${showFurigana ? 'bg-zinc-600 text-zinc-200' : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'}`}
+          >
+            Furigana
+          </button>
           <button
             onClick={() => setDebugTokens(prev => !prev)}
             className={`px-2 py-0.5 rounded text-xs ${debugTokens ? 'bg-zinc-600 text-zinc-200' : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'}`}
@@ -148,7 +172,9 @@ function ReadView() {
           lines.map((line) => (
             <div key={line.id}>
               <p data-line className="text-xl leading-normal">
-                <HighlightedLine text={line.text} highlightMap={highlightMap} jlptWords={jlptWords} />
+                {showFurigana && line.tokens
+                  ? <FuriganaLine tokens={line.tokens} highlightMap={highlightMap} jlptWords={jlptWords} />
+                  : <HighlightedLine text={line.text} highlightMap={highlightMap} jlptWords={jlptWords} tokens={line.tokens} />}
               </p>
               {debugTokens && line.tokens && (
                 <table className="mt-1 mb-2 text-xs font-mono text-zinc-500 border-collapse">

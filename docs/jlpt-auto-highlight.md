@@ -9,6 +9,18 @@ Automatically underlines words matching a selected JLPT level in the reading vie
 3. Selecting N4 → underlines N5 + N4 words (cumulative, since you know lower levels)
 4. Set to "JLPT" (blank) to disable
 
+## BaseForm matching (token-aware)
+
+When tokens are available (after lindera tokenization), JLPT matching uses `token.baseForm` — the dictionary form. This means conjugated verbs/adjectives get underlined:
+
+| Surface text | baseForm | JLPT match |
+|---|---|---|
+| 食べた | 食べる | Yes |
+| 走って | 走る | Yes |
+| 面白かった | 面白い | Yes |
+
+Without tokens (pre-tokenization), falls back to surface text regex matching (only exact dictionary form matches).
+
 ## Underline colors by level
 
 | Level | Color | Hex |
@@ -43,5 +55,6 @@ Level selection stored in `localStorage` under key `jlpt-level`. Survives page r
 | `src/data/jlpt/words.json` | Raw JLPT vocabulary (N1–N5) |
 | `src/data/jlpt/index.ts` | Loader, builds word→level Map, exports `getWordsForLevel()` and level colors |
 | `src/hooks/useJlptLevel.ts` | Hook for level selection + cumulative word Set |
-| `src/components/HighlightedLine.tsx` | Renders dotted underlines for JLPT matches |
+| `src/components/HighlightedLine.tsx` | Renders dotted underlines for JLPT matches (baseForm-aware when tokens provided) |
+| `src/components/FuriganaLine.tsx` | Renders JLPT underlines in furigana mode via token baseForm |
 | `src/pages/ReadView.tsx` | Wires JLPT dropdown + passes data to HighlightedLine |

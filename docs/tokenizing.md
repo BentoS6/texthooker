@@ -72,14 +72,23 @@ IPADIC splits on morpheme boundaries. Conjugated forms are separate tokens:
 
 `baseForm` gives the dictionary form: 面白い, 食べる, 行く, 申し込む.
 
+## Token-aware features
+
+Tokens power several downstream features:
+
+- **Highlight snap** (`src/lib/tokenSnap.ts`): `snapToTokens()` expands user text selection to cover complete token boundaries. Prevents selecting half a token (e.g. 食 from 食べ).
+- **JLPT baseForm matching**: `HighlightedLine` and `FuriganaLine` use `token.baseForm` to match conjugated surface forms against JLPT dictionary entries.
+- **Furigana**: `FuriganaLine` uses token reading + kanji detection for `<ruby>` rendering.
+
 ## Files
 
 | File | Role |
 |---|---|
 | `src/types/token.ts` | Token interface |
 | `src/lib/tokenizer.ts` | WASM init, tokenize, field mapping |
+| `src/lib/tokenSnap.ts` | Snap text selection to token boundaries |
 | `src/hooks/useClipboardPoller.ts` | Calls tokenizer on new lines |
-| `src/pages/ReadView.tsx` | Debug token table (Tokens button in nav) |
+| `src/pages/ReadView.tsx` | Debug token table (Tokens button in nav), token-snapped selection |
 | `src/pages/TokenizerDiag.tsx` | Diagnostic page at `/diag` |
 | `vite.config.ts` | WASM optimizeDeps exclusion |
 
